@@ -12,7 +12,7 @@
             border-collapse: collapse;
             margin: 25px 0;
             background-color: white;
-            border-radius: 10px;
+            border-radius: 0;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
             width: 80%;
@@ -21,6 +21,10 @@
         th, td {
             padding: 10px 15px;
             text-align: left;
+            border-radius: 0;
+        }
+        td:first-child{
+            width: 70%;
         }
         th {
             background-color: #262c38;
@@ -36,41 +40,80 @@
 </head>
 <body>
     <h1 style="text-align: center;">Leaderboard</h1>
+    <table>
+        <tr>
+            <th width="70%">Name</th>
+            <th>Score</th>
+        </tr>
+    </table>
     <table id="leaderboard">
         <tr>
-            <th>Name</th>
+            <th width="70%">Name</th>
             <th>Score</th>
         </tr>
     </table>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    fetch('Score status.csv')
-    .then(response => response.text())
-    .then(data => {
-        const rows = data.split('\n').map(row => row.split(','));
-        const leaderboard = document.getElementById('leaderboard');
-        rows.shift(); // Remove the header row
-        rows.sort((a, b) => b[1] - a[1]); // Sort by score in descending order
+    const leaderboardData = {};
 
-        const top10Rows = rows.slice(0, 10);
+    function processCSV(data) {
+        const rows = data.split('\n').map(row => row.split(','));
+        rows.shift(); // Remove the header row
 
         rows.forEach(row => {
+            const name = row[0];
+            const score = parseInt(row[1]);
+
+            if (name && !isNaN(score)) {
+                if (leaderboardData[name]) {
+                    leaderboardData[name] += score;
+                } else {
+                    leaderboardData[name] = score;
+                }
+            }
+        });
+    }
+
+    function displayLeaderboard() {
+        const sortedEntries = Object.entries(leaderboardData).sort((a, b) => b[1] - a[1]);
+        const top10Entries = sortedEntries.slice(0, 10);
+
+        const leaderboard = document.getElementById('leaderboard');
+        leaderboard.innerHTML = '';
+
+        sortedEntries.forEach(entry => {
             const tr = document.createElement('tr');
-            row.forEach(cellData => {
-                const td = document.createElement('td');
-                td.textContent = cellData;
-                tr.appendChild(td);
-            });
+            const nameTd = document.createElement('td');
+            nameTd.textContent = entry[0];
+            const scoreTd = document.createElement('td');
+            scoreTd.textContent = entry[1];
+            tr.appendChild(nameTd);
+            tr.appendChild(scoreTd);
             leaderboard.appendChild(tr);
         });
 
-        top10Rows.forEach(row => {
-            const tr = leaderboard.querySelector(`tr:nth-child(${top10Rows.indexOf(row) + 1})`);
-            tr.classList.add('top-10'); // Add class to top 10 rows
+        top10Entries.forEach(entry => {
+            const tr = leaderboard.querySelector(`tr:nth-child(${sortedEntries.indexOf(entry) + 1})`);
+            tr.classList.add('top-10');
+        });
+    }
+
+    fetch('Score status.csv')
+    .then(response => response.text())
+    .then(data => {
+        processCSV(data);
+
+        fetch('Score status Week 2.csv')
+        .then(response => response.text())
+        .then(data => {
+            processCSV(data);
+            displayLeaderboard();
         });
     });
 });
+
+
 
 
 
