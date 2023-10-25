@@ -108,7 +108,14 @@
         .then(response => response.text())
         .then(data => {
             processCSV(data);
-            displayLeaderboard();
+           
+            fetch('Score status Week 3.csv')
+            .then(response => response.text())
+            .then(data => {
+                processCSV(data);
+                displayLeaderboard();
+            });
+
         });
     });
 });
