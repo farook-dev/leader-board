@@ -126,7 +126,17 @@
                         .then(response => response.text())
                         .then(data => {
                             processCSV(data);
-                            displayLeaderboard();
+                            fetch('Score status Week 7.csv')
+                            .then(response => response.text())
+                            .then(data => {
+                                processCSV(data);
+                                fetch('Score status Week 8.csv')
+                                .then(response => response.text())
+                                .then(data => {
+                                    processCSV(data);
+                                    displayLeaderboard();
+                                });
+                            });
                         });
                     });
                 });
